@@ -1,24 +1,23 @@
 <?php
-
 namespace App\Services\AccessLogger;
 
 class AccessLoggerConfig implements IAccessLoggerConfig
 {
-    private $logPath;
-
-    /**
-     * AccessLoggerConfig constructor.
-     */
-    public function __construct()
-    {
-        $this->logPath = "C:\\laragon\\bin\\nginx\\nginx-1.12.0\\logs\\access.log";
-    }
+    private $logFileName;
 
     /**
      * @return string
      */
-    public function getLogPath(): string
+    public function getLogFileName()
     {
-        return $this->logPath;
+        return $this->logFileName;
+    }
+
+    /**
+     * @param string $logFileName
+     */
+    public function setLogFileName($logFileName)
+    {
+        $this->logFileName = $logFileName;
     }
 }

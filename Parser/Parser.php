@@ -1,64 +1,69 @@
 <?php
-
 namespace App\Services\Parser;
 
 class Parser
 {
-    const CRAWLERS = [
-        "Googlebot",
-        "Bingbot",
-        "Slurp",
-        "DuckDuckBot",
-        "Baiduspider",
-        "YandexBot",
-        "Sogou",
-        "Konqueror",
-        "Exabot",
-        "facebot",
-        "ia_archiver",
-    ];
-
-    const STATUS_CODES = [
-        "200",
-        "204",
-        "301",
-    ];
+    /**
+     * @var ParserCrawlers
+     */
+    private $parserCrawlers;
 
     /**
-     * @param $subject
-     * @return array
+     * @var ParserStatusCodes
      */
-    public static function parseUniqueIp($subject)
-    {
-        preg_match_all("/\b(?:\d{1,3}\.){3}\d{1,3}\b/", $subject, $matches);
-        $result = array_unique($matches[0]);
+    private $parserStatusCodes;
 
-        return $result;
+    /**
+     * @var ParserUniqueIp
+     */
+    private $parserUniqueIp;
+
+    /**
+     * @var ParserTraffic
+     */
+    private $parserTraffic;
+
+    /**
+     * Parser constructor.
+     * @param string $subject
+     */
+    public function __construct($subject)
+    {
+        $this->parserCrawlers = new ParserCrawlers($subject);
+        $this->parserStatusCodes = new ParserStatusCodes($subject);
+        $this->parserUniqueIp = new ParserUniqueIp($subject);
+        $this->parserTraffic = new ParserTraffic($subject);
     }
 
     /**
-     * @param $subject
-     * @return array
+     * @return ParserCrawlers
      */
-    public static function parseCrawlers($subject)
+    public function getParserCrawlers()
     {
-        $pattern = "(" . implode("|", self::CRAWLERS) . ")";
-        preg_match_all($pattern, $subject, $matches);
-        $result = $matches[0];
-
-        return $result;
+        return $this->parserCrawlers;
     }
 
     /**
-     * @param $subject
-     * @return array
+     * @return ParserStatusCodes
      */
-    public static function parseStatusCodes($subject)
+    public function getParserStatusCodes()
     {
-        $pattern = '/(?!HTTP[^"]*") (' . implode("|", self::STATUS_CODES) . ')/';
-        preg_match_all($pattern, $subject, $matches);
-        $result = array_map('trim', $matches[0]);
+        return $this->parserStatusCodes;
+    }
 
-        return $result;
+    /**
+     * @return ParserUniqueIp
+     */
+    public function getParserUniqueIp()
+    {
+        return $this->parserUniqueIp;
+    }
+
+    /**
+     * @return ParserTraffic
+     */
+    public function getParserTraffic()
+    {
+        return $this->parserTraffic;
     }
 }

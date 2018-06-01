@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services\AccessLogger;
 
 use App\Services\Parser\Parser;
@@ -7,14 +6,14 @@ use App\Services\Parser\Parser;
 class AccessLogger
 {
     /**
-     * @var AccessLoggerConfig
+     * @var IAccessLoggerConfig
      */
     private $config;
 
     /**
-     * @var array $log
+     * @var Parser
      */
-    private $logList;
+    private $parser;
 
     /**
      * @var string
@@ -28,18 +27,13 @@ class AccessLogger
      */
     public function __construct(IAccessLoggerConfig $config)
     {
-        if (!file_exists($config->getLogPath()))
+        if (!file_exists($config->getLogFileName()))
             throw new \Error("File access.log does not exist");
 
         $this->config = $config;
-        $filename = $this->config->getLogPath();
+        $filename = $this->config->getLogFileName();
         $this->logFile = file_get_contents($filename, FILE_USE_INCLUDE_PATH);
-        $this->explodeLog();
-    }
-
-    private function explodeLog()
-    {
-        $this->logList = explode("\n", $this->logFile);
+        $this->parser = new Parser($this->logFile);
     }
 
     /**
@@ -47,7 +41,7 @@ class AccessLogger
      */
     public function getViews()
     {
-        return count($this->logList);
+        return substr_count($this->logFile, "\n");
     }
 
     /**
@@ -55,7 +49,7 @@ class AccessLogger
      */
     public function getUniqueIpAddressCount()
     {
-        return count(Parser::parseUniqueIp($this->logFile));
+        return count($this->parser->getParserUniqueIp()->parseUniqueIp());
     }
 
     /**
@@ -63,9 +57,7 @@ class AccessLogger
      */
     public function getCrawlersCountValues()
     {
-        $crawlersParsed = Parser::parseCrawlers($this->logFile);
-
-        return array_count_values($crawlersParsed);
+        return array_count_values($this->parser->getParserCrawlers()->parseCrawlers());
     }
 
     /**
@@ -73,9 +65,12 @@ class AccessLogger
      */
     public function getStatusCodeCountValues()
     {
-        $statusCodesParsed = Parser::parseStatusCodes($this->logFile);
+        return array_count_values($this->parser->getParserStatusCodes()->parseStatusCodes());
+    }
 
-        return array_count_values($statusCodesParsed);
+    public function getTrafficCount()
+    {
+        return count($this->parser->getParserTraffic()->parseTraffic());
     }
 
     /**
@@ -87,6 +82,7 @@ class AccessLogger
         $output = [
             "views" => $this->getViews(),
             "urls" => $this->getUniqueIpAddressCount(),
+            "traffic" => $this->getTrafficCount(),
             "crawlers" => $this->getCrawlersCountValues(),
             "StatusCodes" => $this->getStatusCodeCountValues(),
         ];
